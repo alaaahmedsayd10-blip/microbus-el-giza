@@ -32,6 +32,8 @@ jobs:
           test -f site/index.html || (echo "index.html was not found at the ZIP root. Check the ZIP folder structure." && find site -maxdepth 3 -type f | head -80 && exit 1)
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
