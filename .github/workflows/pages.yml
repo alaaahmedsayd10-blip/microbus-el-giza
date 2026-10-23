@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "game.zip"
+      - "game.part*"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -23,9 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Prepare game files
+      - name: Reassemble and extract game
         run: |
-          test -f game.zip || (echo "game.zip is missing. Upload the original game ZIP to the repository root." && exit 1)
+          ls game.part* >/dev/null 2>&1 || (echo "Upload all four game.part files to the repository root." && exit 1)
+          cat game.part* > game.zip
           mkdir site
           unzip -q game.zip -d site
           test -f site/index.html || (echo "index.html was not found at the ZIP root. Check the ZIP folder structure." && find site -maxdepth 3 -type f | head -80 && exit 1)
