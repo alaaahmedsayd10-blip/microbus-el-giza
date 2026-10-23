@@ -1,0 +1,47 @@
+name: Publish Microbus El Giza to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "game.zip"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare game files
+        run: |
+          test -f game.zip || (echo "game.zip is missing. Upload the original game ZIP to the repository root." && exit 1)
+          mkdir site
+          unzip -q game.zip -d site
+          test -f site/index.html || (echo "index.html was not found at the ZIP root. Check the ZIP folder structure." && find site -maxdepth 3 -type f | head -80 && exit 1)
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
